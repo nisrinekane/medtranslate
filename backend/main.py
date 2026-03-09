@@ -83,7 +83,8 @@ async def transcribe(
         tmp_path = tmp.name
 
     try:
-        segments, info = whisper_model.transcribe(tmp_path)
+        lang = "en" if direction == "en-es" else "es"
+        segments, info = whisper_model.transcribe(tmp_path, language=lang)
         source_text = " ".join([s.text.strip() for s in segments])
     finally:
         os.unlink(tmp_path)
