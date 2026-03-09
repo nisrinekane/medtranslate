@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedTranslate</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #f0f2f5;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #1a1a2e;
+      color: #e0e0e0;
+      padding: 14px 24px;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    header span.dot {
+      width: 8px;
+      height: 8px;
+      background: #4ecca3;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .columns {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .column:first-child {
+      border-right: 1px solid #ddd;
+    }
+
+    .column-header {
+      padding: 12px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: #fff;
+      border-bottom: 1px solid #e0e0e0;
+      color: #666;
+    }
+
+    .column:first-child .column-header { color: #2563eb; }
+    .column:last-child .column-header { color: #d97706; }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .message {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 15px;
+      line-height: 1.5;
+      max-width: 90%;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.source {
+      background: #e8f0fe;
+      color: #1a1a2e;
+      align-self: flex-end;
+      border-bottom-right-radius: 3px;
+    }
+
+    .message.translated {
+      background: #fff;
+      color: #333;
+      border: 1px solid #e0e0e0;
+      align-self: flex-start;
+      border-bottom-left-radius: 3px;
+    }
+
+    .message .label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+      color: #888;
+    }
+
+    .controls {
+      padding: 16px 24px;
+      background: #fff;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      gap: 16px;
+    }
+
+    .record-btn {
+      flex: 1;
+      padding: 18px;
+      border: none;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .record-btn:active { transform: scale(0.98); }
+
+    .btn-en {
+      background: #2563eb;
+      color: #fff;
+    }
+    .btn-en:hover { background: #1d4ed8; }
+
+    .btn-es {
+      background: #d97706;
+      color: #fff;
+    }
+    .btn-es:hover { background: #b45309; }
+
+    .record-btn.recording {
+      animation: pulse 1s infinite;
+    }
+
+    .record-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+      50% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+    }
+
+    .record-btn.recording.btn-en { background: #dc2626; }
+    .record-btn.recording.btn-es { background: #dc2626; }
+
+    .status {
+      text-align: center;
+      padding: 8px;
+      font-size: 13px;
+      color: #888;
+      background: #fff;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .mic-icon {
+      width: 20px;
+      height: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <span class="dot"></span>
+    MedTranslate
+  </header>
+
+  <div class="columns">
+    <div class="column">
+      <div class="column-header">English</div>
+      <div class="messages" id="messages-en"></div>
+    </div>
+    <div class="column">
+      <div class="column-header">Español</div>
+      <div class="messages" id="messages-es"></div>
+    </div>
+  </div>
+
+  <div class="status" id="status">Press a button and speak</div>
+
+  <div class="controls">
+    <button class="record-btn btn-en" id="btn-en" onclick="startRecording('en-es')">
+      <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 1a4 4 0 0 0-4 4v7a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4z"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+        <line x1="12" y1="19" x2="12" y2="23"/>
+        <line x1="8" y1="23" x2="16" y2="23"/>
+      </svg>
+      English
+    </button>
+    <button class="record-btn btn-es" id="btn-es" onclick="startRecording('es-en')">
+      <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 1a4 4 0 0 0-4 4v7a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4z"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+        <line x1="12" y1="19" x2="12" y2="23"/>
+        <line x1="8" y1="23" x2="16" y2="23"/>
+      </svg>
+      Español
+    </button>
+  </div>
+
+  <script>
+    // preload voices on page load
+    speechSynthesis.getVoices();
+    window.speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let isRecording = false;
+    let currentDirection = null;
+
+    function setStatus(msg) {
+      document.getElementById('status').textContent = msg;
+    }
+
+    function addMessage(enText, esText, direction) {
+      const enCol = document.getElementById('messages-en');
+      const esCol = document.getElementById('messages-es');
+
+      const enMsg = document.createElement('div');
+      const esMsg = document.createElement('div');
+
+      if (direction === 'en-es') {
+        enMsg.className = 'message source';
+        enMsg.innerHTML = `<div class="label">Doctor</div>${enText}`;
+        esMsg.className = 'message translated';
+        esMsg.innerHTML = `<div class="label">Doctor (traducido)</div>${esText}`;
+      } else {
+        esMsg.className = 'message source';
+        esMsg.innerHTML = `<div class="label">Paciente</div>${esText}`;
+        enMsg.className = 'message translated';
+        enMsg.innerHTML = `<div class="label">Patient (translated)</div>${enText}`;
+      }
+
+      enCol.appendChild(enMsg);
+      esCol.appendChild(esMsg);
+
+      enCol.scrollTop = enCol.scrollHeight;
+      esCol.scrollTop = esCol.scrollHeight;
+    }
+
+    function speak(text, lang) {
+      speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = lang === 'es' ? 'es-ES' : 'en-US';
+      utterance.rate = 0.9;
+
+      // chrome needs voices to be loaded first
+      const voices = speechSynthesis.getVoices();
+      const voice = voices.find(v => v.lang.startsWith(lang === 'es' ? 'es' : 'en'));
+      if (voice) utterance.voice = voice;
+
+      speechSynthesis.speak(utterance);
+    }
+
+    async function startRecording(direction) {
+      if (isRecording) {
+        stopRecording();
+        return;
+      }
+
+      currentDirection = direction;
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (e) => {
+          audioChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+          stream.getTracks().forEach(t => t.stop());
+
+          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          await sendAudio(audioBlob, currentDirection);
+        };
+
+        mediaRecorder.start();
+        isRecording = true;
+
+        const btnId = direction === 'en-es' ? 'btn-en' : 'btn-es';
+        const otherBtnId = direction === 'en-es' ? 'btn-es' : 'btn-en';
+        document.getElementById(btnId).classList.add('recording');
+        document.getElementById(btnId).innerHTML = `
+          <svg class="mic-icon" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="6" y="6" width="12" height="12" rx="2"/>
+          </svg>
+          Stop`;
+        document.getElementById(otherBtnId).disabled = true;
+
+        setStatus('Listening...');
+      } catch (err) {
+        setStatus('Microphone access denied');
+      }
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        isRecording = false;
+
+        document.getElementById('btn-en').classList.remove('recording');
+        document.getElementById('btn-en').disabled = false;
+        document.getElementById('btn-en').innerHTML = `
+          <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 1a4 4 0 0 0-4 4v7a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+          English`;
+
+        document.getElementById('btn-es').classList.remove('recording');
+        document.getElementById('btn-es').disabled = false;
+        document.getElementById('btn-es').innerHTML = `
+          <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 1a4 4 0 0 0-4 4v7a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+          Español`;
+
+        setStatus('Processing...');
+      }
+    }
+
+    async function sendAudio(blob, direction) {
+      try {
+        const formData = new FormData();
+        formData.append('audio', blob, 'recording.webm');
+        formData.append('direction', direction);
+
+        const response = await fetch('/transcribe', { method: 'POST', body: formData });
+        const data = await response.json();
+
+        const enText = direction === 'en-es' ? data.source_text : data.translated_text;
+        const esText = direction === 'en-es' ? data.translated_text : data.source_text;
+
+        addMessage(enText, esText, direction);
+
+        // TTS reads the translated text in the target language
+        const ttsLang = direction === 'en-es' ? 'es' : 'en';
+        speak(data.translated_text, ttsLang);
+
+        setStatus('Press a button and speak');
+      } catch (err) {
+        setStatus('Error: could not process audio');
+      }
+    }
+  </script>
+
+</body>
+</html>

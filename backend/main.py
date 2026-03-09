@@ -4,6 +4,8 @@ import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, File, Form, UploadFile
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from faster_whisper import WhisperModel
 from transformers import MarianMTModel, MarianTokenizer
 
@@ -21,7 +23,6 @@ async def lifespan(app: FastAPI):
     global translator_en_es, translator_es_en
     global tokenizer_en_es, tokenizer_es_en
 
-    # load whisper
     whisper_model = WhisperModel("large-v3", device="cuda", compute_type="float16")
 
     # load translation models
@@ -77,7 +78,6 @@ async def transcribe(
     audio: UploadFile = File(...),
     direction: str = Form(...)
 ):
-    # save uploaded audio to a temp file
     with tempfile.NamedTemporaryFile(suffix=".webm", delete=False) as tmp:
         tmp.write(await audio.read())
         tmp_path = tmp.name
@@ -96,3 +96,8 @@ async def transcribe(
         "source_lang": "en" if direction == "en-es" else "es",
         "target_lang": "es" if direction == "en-es" else "en"
     }
+
+
+@app.get("/")
+async def root():
+    return FileResponse("frontend/index.html")
