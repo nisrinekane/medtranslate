@@ -104,6 +104,56 @@
       border-bottom-left-radius: 3px;
     }
 
+    .message .text[contenteditable="true"] {
+      outline: none;
+      cursor: text;
+      border-radius: 4px;
+      padding: 2px 4px;
+      margin: 0 -4px;
+      transition: background 0.15s ease;
+    }
+
+    .message .text[contenteditable="true"]:hover {
+      background: #f6f8fa;
+    }
+
+    .message .text[contenteditable="true"]:focus {
+      background: #f0f4ff;
+      box-shadow: inset 0 0 0 1px #2563eb;
+    }
+
+    .message .actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .message .play-btn {
+      background: #fff;
+      border: 1px solid #d0d7de;
+      color: #555;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .message .play-btn:hover {
+      background: #f6f8fa;
+      border-color: #2563eb;
+      color: #2563eb;
+    }
+
+    .message .play-btn svg {
+      width: 11px;
+      height: 11px;
+    }
+
     .message .label {
       font-size: 11px;
       font-weight: 600;
@@ -238,6 +288,41 @@
       document.getElementById('status').textContent = msg;
     }
 
+    function escapeHtml(s) {
+      return s.replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+
+    function buildMessage(el, labelText, text, variant, ttsLang) {
+      el.className = `message ${variant}`;
+      const isTranslated = variant === 'translated';
+      el.innerHTML = `
+        <div class="label">${labelText}</div>
+        <div class="text"${isTranslated ? ' contenteditable="true" spellcheck="true"' : ''}>${escapeHtml(text)}</div>
+        ${isTranslated ? `
+          <div class="actions">
+            <button class="play-btn" type="button" title="Play edited text">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              Play
+            </button>
+          </div>
+        ` : ''}
+      `;
+      if (isTranslated) {
+        const btn = el.querySelector('.play-btn');
+        const textEl = el.querySelector('.text');
+        btn.addEventListener('click', () => speak(textEl.textContent.trim(), ttsLang));
+        textEl.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            textEl.blur();
+            speak(textEl.textContent.trim(), ttsLang);
+          }
+        });
+      }
+    }
+
     function addMessage(enText, esText, direction) {
       const enCol = document.getElementById('messages-en');
       const esCol = document.getElementById('messages-es');
@@ -246,15 +331,11 @@
       const esMsg = document.createElement('div');
 
       if (direction === 'en-es') {
-        enMsg.className = 'message source';
-        enMsg.innerHTML = `<div class="label">Doctor</div>${enText}`;
-        esMsg.className = 'message translated';
-        esMsg.innerHTML = `<div class="label">Doctor (traducido)</div>${esText}`;
+        buildMessage(enMsg, 'Doctor', enText, 'source');
+        buildMessage(esMsg, 'Doctor (traducido)', esText, 'translated', 'es');
       } else {
-        esMsg.className = 'message source';
-        esMsg.innerHTML = `<div class="label">Paciente</div>${esText}`;
-        enMsg.className = 'message translated';
-        enMsg.innerHTML = `<div class="label">Patient (translated)</div>${enText}`;
+        buildMessage(esMsg, 'Paciente', esText, 'source');
+        buildMessage(enMsg, 'Patient (translated)', enText, 'translated', 'en');
       }
 
       enCol.appendChild(enMsg);
