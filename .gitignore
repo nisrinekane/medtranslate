@@ -1,0 +1,27 @@
+# Audio files and folders
+audio/
+**/audio/
+*.wav
+*.mp3
+*.webm
+*.m4a
+*.ogg
+*.flac
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Model caches
+.cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/

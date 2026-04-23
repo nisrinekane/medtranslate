@@ -231,6 +231,52 @@
       width: 20px;
       height: 20px;
     }
+
+    .alert {
+      background: #fef2f2;
+      border-bottom: 1px solid #fecaca;
+      color: #991b1b;
+      padding: 12px 20px;
+      display: none;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .alert.show { display: flex; }
+
+    .alert-icon {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      margin-top: 1px;
+    }
+
+    .alert-body { flex: 1; }
+
+    .alert-title {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .alert-detail {
+      color: #7f1d1d;
+      font-size: 13px;
+    }
+
+    .alert-close {
+      background: none;
+      border: none;
+      color: #991b1b;
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 4px;
+      opacity: 0.7;
+    }
+
+    .alert-close:hover { opacity: 1; }
   </style>
 </head>
 <body>
@@ -239,6 +285,19 @@
     <span class="dot"></span>
     MedTranslate
   </header>
+
+  <div class="alert" id="alert" role="alert">
+    <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/>
+      <line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+    <div class="alert-body">
+      <div class="alert-title" id="alert-title"></div>
+      <div class="alert-detail" id="alert-detail"></div>
+    </div>
+    <button class="alert-close" type="button" onclick="hideAlert()" aria-label="Dismiss">&times;</button>
+  </div>
 
   <div class="columns">
     <div class="column">
@@ -286,6 +345,61 @@
 
     function setStatus(msg) {
       document.getElementById('status').textContent = msg;
+    }
+
+    function showAlert(title, detail) {
+      document.getElementById('alert-title').textContent = title;
+      document.getElementById('alert-detail').textContent = detail;
+      document.getElementById('alert').classList.add('show');
+    }
+
+    function hideAlert() {
+      document.getElementById('alert').classList.remove('show');
+    }
+
+    function describeMicError(err) {
+      const name = err && err.name;
+      switch (name) {
+        case 'NotAllowedError':
+        case 'PermissionDeniedError':
+          return {
+            title: 'Microphone access blocked',
+            detail: 'Your browser denied microphone access. Click the lock icon in the address bar and allow microphone, then try again.'
+          };
+        case 'NotFoundError':
+        case 'DevicesNotFoundError':
+          return {
+            title: 'No microphone detected',
+            detail: 'No microphone was found on this device. Connect a microphone and try again.'
+          };
+        case 'NotReadableError':
+        case 'TrackStartError':
+          return {
+            title: 'Microphone is in use',
+            detail: 'Another application is using the microphone, or the device returned a hardware error. Close other apps (Zoom, Teams, etc.) and try again.'
+          };
+        case 'OverconstrainedError':
+        case 'ConstraintNotSatisfiedError':
+          return {
+            title: 'Microphone not compatible',
+            detail: 'The microphone does not meet the required audio settings. Try a different microphone.'
+          };
+        case 'SecurityError':
+          return {
+            title: 'Microphone blocked by browser',
+            detail: 'Microphone access requires a secure connection (HTTPS) or localhost. Reload the page over HTTPS.'
+          };
+        case 'AbortError':
+          return {
+            title: 'Recording interrupted',
+            detail: 'The recording was cancelled before it could start. Please try again.'
+          };
+        default:
+          return {
+            title: 'Could not start recording',
+            detail: (err && err.message) ? err.message : 'An unknown error occurred while accessing the microphone.'
+          };
+      }
     }
 
     function escapeHtml(s) {
@@ -366,6 +480,25 @@
       }
 
       currentDirection = direction;
+      hideAlert();
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showAlert(
+          'Microphone not supported',
+          'This browser does not support microphone recording. Please use a recent version of Chrome, Edge, Firefox, or Safari over HTTPS or localhost.'
+        );
+        setStatus('Microphone unavailable');
+        return;
+      }
+
+      if (typeof MediaRecorder === 'undefined') {
+        showAlert(
+          'Recording not supported',
+          'This browser does not support audio recording. Please use a recent version of Chrome, Edge, Firefox, or Safari.'
+        );
+        setStatus('Recording unavailable');
+        return;
+      }
 
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -398,7 +531,9 @@
 
         setStatus('Listening...');
       } catch (err) {
-        setStatus('Microphone access denied');
+        const { title, detail } = describeMicError(err);
+        showAlert(title, detail);
+        setStatus('Press a button and speak');
       }
     }
 
