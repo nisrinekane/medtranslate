@@ -104,22 +104,15 @@
       border-bottom-left-radius: 3px;
     }
 
-    .message .text[contenteditable="true"] {
+    .message .text.editable {
       outline: none;
       cursor: text;
       border-radius: 4px;
       padding: 2px 4px;
       margin: 0 -4px;
-      transition: background 0.15s ease;
-    }
-
-    .message .text[contenteditable="true"]:hover {
-      background: #f6f8fa;
-    }
-
-    .message .text[contenteditable="true"]:focus {
       background: #f0f4ff;
       box-shadow: inset 0 0 0 1px #2563eb;
+      transition: background 0.15s ease;
     }
 
     .message .actions {
@@ -152,6 +145,44 @@
     .message .play-btn svg {
       width: 11px;
       height: 11px;
+    }
+
+    .message .edit-btn {
+      background: #fff;
+      border: 1px solid #d0d7de;
+      color: #555;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .message .edit-btn:hover {
+      background: #f6f8fa;
+      border-color: #2563eb;
+      color: #2563eb;
+    }
+
+    .message .edit-btn.submitting {
+      background: #2563eb;
+      color: #fff;
+      border-color: #2563eb;
+    }
+
+    .message .edit-btn.submitting:hover {
+      background: #1d4ed8;
+      border-color: #1d4ed8;
+      color: #fff;
+    }
+
+    .message .edit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 
     .message .label {
@@ -408,48 +439,147 @@
       }[c]));
     }
 
-    function buildMessage(el, labelText, text, variant, ttsLang) {
+    let lastEnMsg = null;
+    let lastEsMsg = null;
+
+    function buildMessage(el, opts) {
+      const { labelText, text, variant, ttsLang, columnLang, isSource, getPaired, direction } = opts;
+      const editLabel = columnLang === 'es' ? 'Editar' : 'Edit';
+      const submitLabel = columnLang === 'es' ? 'Enviar' : 'Submit';
+
       el.className = `message ${variant}`;
-      const isTranslated = variant === 'translated';
+
+      const playButtonHTML = isSource ? '' : `
+        <button class="play-btn" type="button" title="Play">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Play
+        </button>
+      `;
+
       el.innerHTML = `
         <div class="label">${labelText}</div>
-        <div class="text"${isTranslated ? ' contenteditable="true" spellcheck="true"' : ''}>${escapeHtml(text)}</div>
-        ${isTranslated ? `
-          <div class="actions">
-            <button class="play-btn" type="button" title="Play edited text">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-              Play
-            </button>
-          </div>
-        ` : ''}
+        <div class="text">${escapeHtml(text)}</div>
+        <div class="actions">
+          <button class="edit-btn" type="button">${editLabel}</button>
+          ${playButtonHTML}
+        </div>
       `;
-      if (isTranslated) {
-        const btn = el.querySelector('.play-btn');
-        const textEl = el.querySelector('.text');
-        btn.addEventListener('click', () => speak(textEl.textContent.trim(), ttsLang));
-        textEl.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            textEl.blur();
-            speak(textEl.textContent.trim(), ttsLang);
+
+      const textEl = el.querySelector('.text');
+      const editBtn = el.querySelector('.edit-btn');
+      const playBtn = el.querySelector('.play-btn');
+      let isEditing = false;
+
+      function enterEditMode() {
+        isEditing = true;
+        textEl.contentEditable = 'true';
+        textEl.spellcheck = true;
+        textEl.classList.add('editable');
+        editBtn.textContent = submitLabel;
+        editBtn.classList.add('submitting');
+        textEl.focus();
+        const range = document.createRange();
+        range.selectNodeContents(textEl);
+        range.collapse(false);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+
+      function exitEditMode() {
+        isEditing = false;
+        textEl.contentEditable = 'false';
+        textEl.classList.remove('editable');
+        editBtn.textContent = editLabel;
+        editBtn.classList.remove('submitting');
+      }
+
+      async function submit() {
+        const newText = textEl.textContent.trim();
+        exitEditMode();
+
+        if (isSource) {
+          editBtn.disabled = true;
+          setStatus(columnLang === 'es' ? 'Traduciendo...' : 'Translating...');
+          try {
+            const res = await fetch('/retranslate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text: newText, direction })
+            });
+            if (!res.ok) throw new Error('retranslate failed');
+            const data = await res.json();
+            const paired = getPaired();
+            if (paired) {
+              const pairedTextEl = paired.querySelector('.text');
+              if (pairedTextEl) pairedTextEl.textContent = data.translated_text;
+            }
+            const targetLang = direction === 'en-es' ? 'es' : 'en';
+            speak(data.translated_text, targetLang);
+            setStatus('Press a button and speak');
+          } catch (e) {
+            setStatus('Error: could not re-translate');
+          } finally {
+            editBtn.disabled = false;
           }
+        } else {
+          speak(newText, ttsLang);
+        }
+      }
+
+      editBtn.addEventListener('click', () => {
+        if (editBtn.disabled) return;
+        if (isEditing) submit();
+        else enterEditMode();
+      });
+
+      textEl.addEventListener('keydown', (e) => {
+        if (isEditing && e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          submit();
+        }
+      });
+
+      if (playBtn) {
+        playBtn.addEventListener('click', () => {
+          speak(textEl.textContent.trim(), ttsLang);
         });
       }
+
+      el.freeze = () => {
+        if (isEditing) exitEditMode();
+        if (editBtn && editBtn.parentNode) editBtn.remove();
+      };
     }
 
     function addMessage(enText, esText, direction) {
       const enCol = document.getElementById('messages-en');
       const esCol = document.getElementById('messages-es');
 
+      if (lastEnMsg && lastEnMsg.freeze) lastEnMsg.freeze();
+      if (lastEsMsg && lastEsMsg.freeze) lastEsMsg.freeze();
+
       const enMsg = document.createElement('div');
       const esMsg = document.createElement('div');
 
       if (direction === 'en-es') {
-        buildMessage(enMsg, 'Doctor', enText, 'source');
-        buildMessage(esMsg, 'Doctor (traducido)', esText, 'translated', 'es');
+        buildMessage(enMsg, {
+          labelText: 'Doctor', text: enText, variant: 'source', ttsLang: 'en',
+          columnLang: 'en', isSource: true, getPaired: () => esMsg, direction
+        });
+        buildMessage(esMsg, {
+          labelText: 'Doctor (traducido)', text: esText, variant: 'translated', ttsLang: 'es',
+          columnLang: 'es', isSource: false, getPaired: () => enMsg, direction
+        });
       } else {
-        buildMessage(esMsg, 'Paciente', esText, 'source');
-        buildMessage(enMsg, 'Patient (translated)', enText, 'translated', 'en');
+        buildMessage(esMsg, {
+          labelText: 'Paciente', text: esText, variant: 'source', ttsLang: 'es',
+          columnLang: 'es', isSource: true, getPaired: () => enMsg, direction
+        });
+        buildMessage(enMsg, {
+          labelText: 'Patient (translated)', text: enText, variant: 'translated', ttsLang: 'en',
+          columnLang: 'en', isSource: false, getPaired: () => esMsg, direction
+        });
       }
 
       enCol.appendChild(enMsg);
@@ -457,6 +587,9 @@
 
       enCol.scrollTop = enCol.scrollHeight;
       esCol.scrollTop = esCol.scrollHeight;
+
+      lastEnMsg = enMsg;
+      lastEsMsg = esMsg;
     }
 
     function speak(text, lang) {

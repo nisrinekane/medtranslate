@@ -7,6 +7,7 @@ from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from faster_whisper import WhisperModel
+from pydantic import BaseModel
 from transformers import MarianMTModel, MarianTokenizer
 
 
@@ -97,6 +98,17 @@ async def transcribe(
         "source_lang": "en" if direction == "en-es" else "es",
         "target_lang": "es" if direction == "en-es" else "en"
     }
+
+
+class RetranslateRequest(BaseModel):
+    text: str
+    direction: str
+
+
+@app.post("/retranslate")
+async def retranslate(req: RetranslateRequest):
+    translated_text = translate(req.text, req.direction)
+    return {"translated_text": translated_text}
 
 
 @app.get("/")
