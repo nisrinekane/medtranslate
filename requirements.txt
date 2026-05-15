@@ -5,3 +5,8 @@ python-multipart==0.0.12
 transformers==4.46.0
 sentencepiece==0.2.0
 torch==2.4.0
+httpx==0.28.1
+
+# windows-only, ctranslate2 needs these to find cuBLAS / cuDNN at inference time
+nvidia-cublas-cu12; sys_platform == "win32"
+nvidia-cudnn-cu12; sys_platform == "win32"

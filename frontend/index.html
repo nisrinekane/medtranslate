@@ -63,8 +63,8 @@
       color: #666;
     }
 
-    .column:first-child .column-header { color: #2563eb; }
-    .column:last-child .column-header { color: #d97706; }
+    .column[data-side="a"] .column-header { color: #2563eb; }
+    .column[data-side="b"] .column-header { color: #d97706; }
 
     .messages {
       flex: 1;
@@ -220,17 +220,17 @@
 
     .record-btn:active { transform: scale(0.98); }
 
-    .btn-en {
+    .record-btn[data-side="a"] {
       background: #2563eb;
       color: #fff;
     }
-    .btn-en:hover { background: #1d4ed8; }
+    .record-btn[data-side="a"]:hover { background: #1d4ed8; }
 
-    .btn-es {
+    .record-btn[data-side="b"] {
       background: #d97706;
       color: #fff;
     }
-    .btn-es:hover { background: #b45309; }
+    .record-btn[data-side="b"]:hover { background: #b45309; }
 
     .record-btn.recording {
       animation: pulse 1s infinite;
@@ -246,8 +246,23 @@
       50% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
     }
 
-    .record-btn.recording.btn-en { background: #dc2626; }
-    .record-btn.recording.btn-es { background: #dc2626; }
+    .record-btn.recording[data-side="a"],
+    .record-btn.recording[data-side="b"] { background: #dc2626; }
+
+    .pair-select {
+      margin-left: auto;
+      background: #2a2a3e;
+      color: #e0e0e0;
+      border: 1px solid #3a3a4e;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .pair-select:hover { border-color: #4ecca3; }
+    .pair-select:focus { outline: none; border-color: #4ecca3; }
 
     .status {
       text-align: center;
@@ -308,6 +323,225 @@
     }
 
     .alert-close:hover { opacity: 1; }
+
+    .visit-actions {
+      display: flex;
+      justify-content: center;
+      padding: 8px 24px;
+      background: #fff;
+      border-top: 1px solid #f0f0f0;
+      gap: 10px;
+    }
+
+    .visit-btn {
+      background: #fff;
+      color: #2563eb;
+      border: 1px solid #2563eb;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .visit-btn:hover:not(:disabled) {
+      background: #2563eb;
+      color: #fff;
+    }
+
+    .visit-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .visit-btn svg { width: 14px; height: 14px; }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 15, 30, 0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 24px;
+    }
+
+    .modal-backdrop.show { display: flex; }
+
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      max-width: 640px;
+      width: 100%;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+    }
+
+    .modal-head {
+      padding: 16px 20px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .modal-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+      color: #666;
+      padding: 0 6px;
+    }
+
+    .modal-close:hover { color: #1a1a2e; }
+
+    .modal-body {
+      padding: 18px 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .modal-body pre {
+      font-family: 'Menlo', 'Consolas', 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      color: #1a1a2e;
+    }
+
+    .modal-body .loading {
+      color: #888;
+      font-style: italic;
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .modal-foot {
+      padding: 12px 20px;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .modal-foot button {
+      background: #fff;
+      color: #555;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+
+    .modal-foot button.primary {
+      background: #2563eb;
+      color: #fff;
+      border-color: #2563eb;
+    }
+
+    .modal-foot button:hover { background: #f6f8fa; }
+    .modal-foot button.primary:hover { background: #1d4ed8; }
+
+    .copied-flash { color: #4ecca3 !important; }
+
+    .chart-panel {
+      flex: 0 0 280px;
+      border-left: 1px solid #ddd;
+      background: #fafbfc;
+      padding: 14px 18px;
+      overflow-y: auto;
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+      font-size: 13px;
+      color: #333;
+    }
+
+    .chart-panel.visible { display: flex; }
+
+    .chart-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .chart-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #2563eb;
+    }
+
+    .chart-status {
+      font-size: 11px;
+      color: #888;
+      font-style: italic;
+    }
+
+    .chart-section { display: flex; flex-direction: column; gap: 4px; }
+
+    .chart-section-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #666;
+    }
+
+    .chart-section-content {
+      font-size: 13px;
+      line-height: 1.4;
+      color: #1a1a2e;
+    }
+
+    .chart-section-content ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .chart-section-content li {
+      padding: 3px 0;
+      border-bottom: 1px dashed #eee;
+    }
+
+    .chart-section-content li:last-child { border-bottom: none; }
+
+    .chart-section-content .meta {
+      color: #888;
+      font-size: 12px;
+      margin-left: 4px;
+    }
+
+    .chart-empty {
+      color: #aaa;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
@@ -315,6 +549,11 @@
   <header>
     <span class="dot"></span>
     MedTranslate
+    <select class="pair-select" id="pair-select" aria-label="Language pair">
+      <option value="en-es">English ↔ Español</option>
+      <option value="en-zh">English ↔ 中文</option>
+      <option value="es-zh">Español ↔ 中文</option>
+    </select>
   </header>
 
   <div class="alert" id="alert" role="alert">
@@ -331,40 +570,137 @@
   </div>
 
   <div class="columns">
-    <div class="column">
-      <div class="column-header">English</div>
-      <div class="messages" id="messages-en"></div>
+    <div class="column" data-side="a">
+      <div class="column-header" id="header-a">English</div>
+      <div class="messages" id="messages-a"></div>
     </div>
-    <div class="column">
-      <div class="column-header">Español</div>
-      <div class="messages" id="messages-es"></div>
+    <div class="column" data-side="b">
+      <div class="column-header" id="header-b">Español</div>
+      <div class="messages" id="messages-b"></div>
+    </div>
+    <aside class="chart-panel" id="chart-panel" aria-label="Patient chart">
+      <div class="chart-head">
+        <div class="chart-title">Visit Chart</div>
+        <div class="chart-status" id="chart-status"></div>
+      </div>
+      <div class="chart-section">
+        <div class="chart-section-title">Chief complaint</div>
+        <div class="chart-section-content" id="chart-cc"><span class="chart-empty">—</span></div>
+      </div>
+      <div class="chart-section">
+        <div class="chart-section-title">Symptoms</div>
+        <div class="chart-section-content" id="chart-symptoms"><span class="chart-empty">—</span></div>
+      </div>
+      <div class="chart-section">
+        <div class="chart-section-title">Medications</div>
+        <div class="chart-section-content" id="chart-meds"><span class="chart-empty">—</span></div>
+      </div>
+      <div class="chart-section">
+        <div class="chart-section-title">Allergies</div>
+        <div class="chart-section-content" id="chart-allergies"><span class="chart-empty">—</span></div>
+      </div>
+      <div class="chart-section">
+        <div class="chart-section-title">Vitals</div>
+        <div class="chart-section-content" id="chart-vitals"><span class="chart-empty">—</span></div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="visit-actions">
+    <button class="visit-btn" id="chart-btn" type="button" onclick="toggleChart()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+        <line x1="3" y1="9" x2="21" y2="9"/>
+        <line x1="9" y1="21" x2="9" y2="9"/>
+      </svg>
+      <span id="chart-btn-label">Show Chart</span>
+    </button>
+    <button class="visit-btn" id="soap-btn" type="button" disabled onclick="generateSoap()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="9" y1="13" x2="15" y2="13"/>
+        <line x1="9" y1="17" x2="15" y2="17"/>
+      </svg>
+      Generate SOAP Note
+    </button>
+  </div>
+
+  <div class="modal-backdrop" id="soap-modal" role="dialog" aria-modal="true" aria-labelledby="soap-modal-title">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title" id="soap-modal-title">SOAP Note</div>
+        <button class="modal-close" type="button" onclick="closeSoap()" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <pre id="soap-content"></pre>
+        <div class="loading" id="soap-loading">Generating note...</div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" id="soap-copy" onclick="copySoap()">Copy</button>
+        <button type="button" class="primary" onclick="closeSoap()">Close</button>
+      </div>
     </div>
   </div>
 
   <div class="status" id="status">Press a button and speak</div>
 
   <div class="controls">
-    <button class="record-btn btn-en" id="btn-en" onclick="startRecording('en-es')">
+    <button class="record-btn" data-side="a" id="btn-a" onclick="startRecording('a')">
       <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M12 1a4 4 0 0 0-4 4v7a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4z"/>
         <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
         <line x1="12" y1="19" x2="12" y2="23"/>
         <line x1="8" y1="23" x2="16" y2="23"/>
       </svg>
-      English
+      <span class="btn-label">English</span>
     </button>
-    <button class="record-btn btn-es" id="btn-es" onclick="startRecording('es-en')">
+    <button class="record-btn" data-side="b" id="btn-b" onclick="startRecording('b')">
       <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M12 1a4 4 0 0 0-4 4v7a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4z"/>
         <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
         <line x1="12" y1="19" x2="12" y2="23"/>
         <line x1="8" y1="23" x2="16" y2="23"/>
       </svg>
-      Español
+      <span class="btn-label">Español</span>
     </button>
   </div>
 
   <script>
+    // language metadata for each supported language code
+    const LANGS = {
+      en: {
+        native: 'English',
+        button: 'English',
+        ttsLocale: 'en-US',
+        edit: 'Edit', submit: 'Submit',
+        translating: 'Translating...',
+        translatedSuffix: '(translated)',
+        roleSpeaker: 'Doctor', roleListener: 'Patient'
+      },
+      es: {
+        native: 'Español',
+        button: 'Español',
+        ttsLocale: 'es-ES',
+        edit: 'Editar', submit: 'Enviar',
+        translating: 'Traduciendo...',
+        translatedSuffix: '(traducido)',
+        roleSpeaker: 'Doctor', roleListener: 'Paciente'
+      },
+      zh: {
+        native: '中文',
+        button: '中文',
+        ttsLocale: 'zh-CN',
+        edit: '编辑', submit: '提交',
+        translating: '翻译中...',
+        translatedSuffix: '（翻译）',
+        roleSpeaker: '医生', roleListener: '病人'
+      },
+    };
+
+    // current pair, side A is left and side B is right, default is en/es
+    const pair = { a: 'en', b: 'es' };
+
     // preload voices on page load
     speechSynthesis.getVoices();
     window.speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
@@ -373,6 +709,10 @@
     let audioChunks = [];
     let isRecording = false;
     let currentDirection = null;
+    let lastMsgA = null;
+    let lastMsgB = null;
+    // visit transcript, each turn is {speaker, source_text, source_lang, translated_text, target_lang}
+    const conversation = [];
 
     function setStatus(msg) {
       document.getElementById('status').textContent = msg;
@@ -439,13 +779,130 @@
       }[c]));
     }
 
-    let lastEnMsg = null;
-    let lastEsMsg = null;
+    function applyPair() {
+      // button labels
+      document.querySelector('#btn-a .btn-label').textContent = LANGS[pair.a].button;
+      document.querySelector('#btn-b .btn-label').textContent = LANGS[pair.b].button;
+      // column headers
+      document.getElementById('header-a').textContent = LANGS[pair.a].native;
+      document.getElementById('header-b').textContent = LANGS[pair.b].native;
+      // clear conversation when pair changes mid-session
+      document.getElementById('messages-a').innerHTML = '';
+      document.getElementById('messages-b').innerHTML = '';
+      lastMsgA = null;
+      lastMsgB = null;
+      conversation.length = 0;
+      updateSoapButton();
+    }
+
+    function updateSoapButton() {
+      document.getElementById('soap-btn').disabled = conversation.length === 0;
+    }
+
+    let chartVisible = false;
+    let chartUpdateInFlight = false;
+    let chartUpdatePending = false;
+
+    function toggleChart() {
+      chartVisible = !chartVisible;
+      const panel = document.getElementById('chart-panel');
+      const label = document.getElementById('chart-btn-label');
+      panel.classList.toggle('visible', chartVisible);
+      label.textContent = chartVisible ? 'Hide Chart' : 'Show Chart';
+      if (chartVisible && conversation.length > 0) updateChart();
+    }
+
+    function setText(id, html) { document.getElementById(id).innerHTML = html; }
+
+    function emptySpan() { return '<span class="chart-empty">—</span>'; }
+
+    function escapeText(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+
+    function renderChart(chart) {
+      // chief complaint
+      setText('chart-cc',
+        chart.chief_complaint ? escapeText(chart.chief_complaint) : emptySpan());
+
+      // symptoms with optional onset and duration
+      const syms = Array.isArray(chart.symptoms) ? chart.symptoms : [];
+      if (syms.length === 0) {
+        setText('chart-symptoms', emptySpan());
+      } else {
+        const items = syms.map(s => {
+          const desc = escapeText(s && s.description);
+          const meta = [];
+          if (s && s.onset) meta.push('onset: ' + escapeText(s.onset));
+          if (s && s.duration) meta.push('duration: ' + escapeText(s.duration));
+          const metaStr = meta.length ? ` <span class="meta">(${meta.join(', ')})</span>` : '';
+          return `<li>${desc}${metaStr}</li>`;
+        }).join('');
+        setText('chart-symptoms', `<ul>${items}</ul>`);
+      }
+
+      // medications
+      const meds = Array.isArray(chart.medications) ? chart.medications : [];
+      setText('chart-meds', meds.length
+        ? `<ul>${meds.map(m => `<li>${escapeText(m)}</li>`).join('')}</ul>`
+        : emptySpan());
+
+      // allergies
+      const allergies = Array.isArray(chart.allergies) ? chart.allergies : [];
+      setText('chart-allergies', allergies.length
+        ? `<ul>${allergies.map(a => `<li>${escapeText(a)}</li>`).join('')}</ul>`
+        : emptySpan());
+
+      // vitals
+      const vitals = (chart.vitals && typeof chart.vitals === 'object') ? chart.vitals : {};
+      const vKeys = Object.keys(vitals);
+      setText('chart-vitals', vKeys.length
+        ? `<ul>${vKeys.map(k => `<li>${escapeText(k)}: ${escapeText(vitals[k])}</li>`).join('')}</ul>`
+        : emptySpan());
+    }
+
+    async function updateChart() {
+      if (!chartVisible) return;
+      if (conversation.length === 0) return;
+      // coalesce concurrent calls, if one is already in flight mark a pending re-run
+      if (chartUpdateInFlight) { chartUpdatePending = true; return; }
+      chartUpdateInFlight = true;
+      document.getElementById('chart-status').textContent = 'Updating...';
+      try {
+        const res = await fetch('/extract', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ conversation, chart_lang: 'en' })
+        });
+        if (!res.ok) throw new Error(`status ${res.status}`);
+        const chart = await res.json();
+        renderChart(chart);
+        document.getElementById('chart-status').textContent = '';
+      } catch (e) {
+        document.getElementById('chart-status').textContent = 'update failed';
+      } finally {
+        chartUpdateInFlight = false;
+        if (chartUpdatePending) {
+          chartUpdatePending = false;
+          updateChart();
+        }
+      }
+    }
+
+    function setPair(pairCode) {
+      const [a, b] = pairCode.split('-');
+      if (!LANGS[a] || !LANGS[b]) return;
+      pair.a = a;
+      pair.b = b;
+      applyPair();
+    }
 
     function buildMessage(el, opts) {
       const { labelText, text, variant, ttsLang, columnLang, isSource, getPaired, direction } = opts;
-      const editLabel = columnLang === 'es' ? 'Editar' : 'Edit';
-      const submitLabel = columnLang === 'es' ? 'Enviar' : 'Submit';
+      const editLabel = LANGS[columnLang].edit;
+      const submitLabel = LANGS[columnLang].submit;
 
       el.className = `message ${variant}`;
 
@@ -500,7 +957,7 @@
 
         if (isSource) {
           editBtn.disabled = true;
-          setStatus(columnLang === 'es' ? 'Traduciendo...' : 'Translating...');
+          setStatus(LANGS[columnLang].translating);
           try {
             const res = await fetch('/retranslate', {
               method: 'POST',
@@ -514,7 +971,7 @@
               const pairedTextEl = paired.querySelector('.text');
               if (pairedTextEl) pairedTextEl.textContent = data.translated_text;
             }
-            const targetLang = direction === 'en-es' ? 'es' : 'en';
+            const targetLang = direction.split('-')[1];
             speak(data.translated_text, targetLang);
             setStatus('Press a button and speak');
           } catch (e) {
@@ -552,67 +1009,88 @@
       };
     }
 
-    function addMessage(enText, esText, direction) {
-      const enCol = document.getElementById('messages-en');
-      const esCol = document.getElementById('messages-es');
+    // render a turn into the two columns, sourceSide is 'a' or 'b'
+    function addMessage(sourceText, translatedText, sourceSide) {
+      const colA = document.getElementById('messages-a');
+      const colB = document.getElementById('messages-b');
 
-      if (lastEnMsg && lastEnMsg.freeze) lastEnMsg.freeze();
-      if (lastEsMsg && lastEsMsg.freeze) lastEsMsg.freeze();
+      if (lastMsgA && lastMsgA.freeze) lastMsgA.freeze();
+      if (lastMsgB && lastMsgB.freeze) lastMsgB.freeze();
 
-      const enMsg = document.createElement('div');
-      const esMsg = document.createElement('div');
+      const msgA = document.createElement('div');
+      const msgB = document.createElement('div');
 
-      if (direction === 'en-es') {
-        buildMessage(enMsg, {
-          labelText: 'Doctor', text: enText, variant: 'source', ttsLang: 'en',
-          columnLang: 'en', isSource: true, getPaired: () => esMsg, direction
-        });
-        buildMessage(esMsg, {
-          labelText: 'Doctor (traducido)', text: esText, variant: 'translated', ttsLang: 'es',
-          columnLang: 'es', isSource: false, getPaired: () => enMsg, direction
-        });
-      } else {
-        buildMessage(esMsg, {
-          labelText: 'Paciente', text: esText, variant: 'source', ttsLang: 'es',
-          columnLang: 'es', isSource: true, getPaired: () => enMsg, direction
-        });
-        buildMessage(enMsg, {
-          labelText: 'Patient (translated)', text: enText, variant: 'translated', ttsLang: 'en',
-          columnLang: 'en', isSource: false, getPaired: () => esMsg, direction
-        });
-      }
+      const sourceLang = pair[sourceSide];
+      const targetSide = sourceSide === 'a' ? 'b' : 'a';
+      const targetLang = pair[targetSide];
+      const direction = `${sourceLang}-${targetLang}`;
+      const sourceMsg = sourceSide === 'a' ? msgA : msgB;
+      const targetMsg = sourceSide === 'a' ? msgB : msgA;
 
-      enCol.appendChild(enMsg);
-      esCol.appendChild(esMsg);
+      // role mapping, side A is conventionally the doctor and side B the patient
+      // speaker label uses the source language, listener label uses the target language plus a "translated" suffix
+      const role = sourceSide === 'a' ? 'roleSpeaker' : 'roleListener';
+      const sourceLabel = LANGS[sourceLang][role];
+      const targetLabel = `${LANGS[targetLang][role]} ${LANGS[targetLang].translatedSuffix}`;
 
-      enCol.scrollTop = enCol.scrollHeight;
-      esCol.scrollTop = esCol.scrollHeight;
+      buildMessage(sourceMsg, {
+        labelText: sourceLabel, text: sourceText, variant: 'source',
+        ttsLang: sourceLang, columnLang: sourceLang,
+        isSource: true, getPaired: () => targetMsg, direction
+      });
+      buildMessage(targetMsg, {
+        labelText: targetLabel, text: translatedText, variant: 'translated',
+        ttsLang: targetLang, columnLang: targetLang,
+        isSource: false, getPaired: () => sourceMsg, direction
+      });
 
-      lastEnMsg = enMsg;
-      lastEsMsg = esMsg;
+      colA.appendChild(msgA);
+      colB.appendChild(msgB);
+      colA.scrollTop = colA.scrollHeight;
+      colB.scrollTop = colB.scrollHeight;
+
+      lastMsgA = msgA;
+      lastMsgB = msgB;
     }
 
     function speak(text, lang) {
       speechSynthesis.cancel();
+      const meta = LANGS[lang];
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang === 'es' ? 'es-ES' : 'en-US';
+      utterance.lang = meta ? meta.ttsLocale : 'en-US';
       utterance.rate = 0.9;
-
-      // chrome needs voices to be loaded first
       const voices = speechSynthesis.getVoices();
-      const voice = voices.find(v => v.lang.startsWith(lang === 'es' ? 'es' : 'en'));
+      const voice = voices.find(v => v.lang.startsWith(lang)) || voices.find(v => v.lang.startsWith(utterance.lang));
       if (voice) utterance.voice = voice;
-
       speechSynthesis.speak(utterance);
     }
 
-    async function startRecording(direction) {
+    function makeMicSvg() {
+      return `<svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 1a4 4 0 0 0-4 4v7a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>`;
+    }
+
+    function restoreButton(side) {
+      const btn = document.getElementById(`btn-${side}`);
+      btn.classList.remove('recording');
+      btn.disabled = false;
+      btn.innerHTML = `${makeMicSvg()}<span class="btn-label">${LANGS[pair[side]].button}</span>`;
+    }
+
+    async function startRecording(side) {
       if (isRecording) {
         stopRecording();
         return;
       }
 
-      currentDirection = direction;
+      const sourceLang = pair[side];
+      const otherSide = side === 'a' ? 'b' : 'a';
+      const targetLang = pair[otherSide];
+      currentDirection = `${sourceLang}-${targetLang}`;
       hideAlert();
 
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -644,23 +1122,18 @@
 
         mediaRecorder.onstop = async () => {
           stream.getTracks().forEach(t => t.stop());
-
           const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-          await sendAudio(audioBlob, currentDirection);
+          await sendAudio(audioBlob, side, currentDirection);
         };
 
         mediaRecorder.start();
         isRecording = true;
 
-        const btnId = direction === 'en-es' ? 'btn-en' : 'btn-es';
-        const otherBtnId = direction === 'en-es' ? 'btn-es' : 'btn-en';
-        document.getElementById(btnId).classList.add('recording');
-        document.getElementById(btnId).innerHTML = `
-          <svg class="mic-icon" viewBox="0 0 24 24" fill="currentColor">
-            <rect x="6" y="6" width="12" height="12" rx="2"/>
-          </svg>
-          Stop`;
-        document.getElementById(otherBtnId).disabled = true;
+        const btn = document.getElementById(`btn-${side}`);
+        const otherBtn = document.getElementById(`btn-${otherSide}`);
+        btn.classList.add('recording');
+        btn.innerHTML = `<svg class="mic-icon" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg><span class="btn-label">Stop</span>`;
+        otherBtn.disabled = true;
 
         setStatus('Listening...');
       } catch (err) {
@@ -674,34 +1147,13 @@
       if (mediaRecorder && mediaRecorder.state === 'recording') {
         mediaRecorder.stop();
         isRecording = false;
-
-        document.getElementById('btn-en').classList.remove('recording');
-        document.getElementById('btn-en').disabled = false;
-        document.getElementById('btn-en').innerHTML = `
-          <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 1a4 4 0 0 0-4 4v7a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4z"/>
-            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-            <line x1="12" y1="19" x2="12" y2="23"/>
-            <line x1="8" y1="23" x2="16" y2="23"/>
-          </svg>
-          English`;
-
-        document.getElementById('btn-es').classList.remove('recording');
-        document.getElementById('btn-es').disabled = false;
-        document.getElementById('btn-es').innerHTML = `
-          <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 1a4 4 0 0 0-4 4v7a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4z"/>
-            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-            <line x1="12" y1="19" x2="12" y2="23"/>
-            <line x1="8" y1="23" x2="16" y2="23"/>
-          </svg>
-          Español`;
-
+        restoreButton('a');
+        restoreButton('b');
         setStatus('Processing...');
       }
     }
 
-    async function sendAudio(blob, direction) {
+    async function sendAudio(blob, sourceSide, direction) {
       try {
         const formData = new FormData();
         formData.append('audio', blob, 'recording.webm');
@@ -710,20 +1162,89 @@
         const response = await fetch('/transcribe', { method: 'POST', body: formData });
         const data = await response.json();
 
-        const enText = direction === 'en-es' ? data.source_text : data.translated_text;
-        const esText = direction === 'en-es' ? data.translated_text : data.source_text;
+        addMessage(data.source_text, data.translated_text, sourceSide);
 
-        addMessage(enText, esText, direction);
+        // track turn in the visit transcript so /soap and /extract can reconstruct it
+        // convention, side A is the doctor and side B is the patient
+        conversation.push({
+          speaker: sourceSide === 'a' ? 'doctor' : 'patient',
+          source_text: data.source_text,
+          source_lang: data.source_lang,
+          translated_text: data.translated_text,
+          target_lang: data.target_lang,
+        });
+        updateSoapButton();
+        // fire and forget, chart fills in async and does not block the speak() below
+        updateChart();
 
-        // TTS reads the translated text in the target language
-        const ttsLang = direction === 'en-es' ? 'es' : 'en';
-        speak(data.translated_text, ttsLang);
+        const targetLang = direction.split('-')[1];
+        speak(data.translated_text, targetLang);
 
         setStatus('Press a button and speak');
       } catch (err) {
         setStatus('Error: could not process audio');
       }
     }
+
+    async function generateSoap() {
+      if (!conversation.length) return;
+      const modal = document.getElementById('soap-modal');
+      const content = document.getElementById('soap-content');
+      const loading = document.getElementById('soap-loading');
+      const copyBtn = document.getElementById('soap-copy');
+      content.textContent = '';
+      loading.style.display = 'block';
+      copyBtn.disabled = true;
+      modal.classList.add('show');
+
+      try {
+        const res = await fetch('/soap', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ conversation, chart_lang: 'en' })
+        });
+        if (!res.ok) throw new Error(`status ${res.status}`);
+        const data = await res.json();
+        content.textContent = data.soap_note;
+      } catch (e) {
+        content.textContent = `Could not generate note: ${e.message}`;
+      } finally {
+        loading.style.display = 'none';
+        copyBtn.disabled = false;
+      }
+    }
+
+    function closeSoap() {
+      document.getElementById('soap-modal').classList.remove('show');
+    }
+
+    async function copySoap() {
+      const text = document.getElementById('soap-content').textContent;
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        const btn = document.getElementById('soap-copy');
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied-flash');
+        setTimeout(() => {
+          btn.textContent = orig;
+          btn.classList.remove('copied-flash');
+        }, 1200);
+      } catch (e) {
+        // clipboard may be unavailable on insecure origins; ignore silently
+      }
+    }
+
+    // close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeSoap();
+    });
+
+    // wire up the language pair selector
+    document.getElementById('pair-select').addEventListener('change', (e) => {
+      setPair(e.target.value);
+    });
   </script>
 
 </body>
