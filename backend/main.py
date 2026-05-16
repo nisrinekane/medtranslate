@@ -22,6 +22,7 @@ if sys.platform == "win32":
 import httpx
 from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from faster_whisper import WhisperModel
 from pydantic import BaseModel
 from transformers import MarianMTModel, MarianTokenizer
@@ -72,6 +73,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="medtranslate", lifespan=lifespan)
+
+# serve frontend assets (logo, images) under /static
+app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
 
 async def gemma_translate(text: str, direction: str) -> str:
