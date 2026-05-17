@@ -1,15 +1,26 @@
 """prompt templates for the gemma 4 medical interpreter and clinical scribe"""
 
 
+# used by /transcribe and /retranslate for real-time medical interpretation
+# the formal address instruction matters because medical interpreters use formal
+# pronouns (usted in Spanish, 您 in Mandarin) rather than the informal forms
+# that general translation models default to
 GEMMA_TRANSLATE_SYSTEM = (
     "You are a professional medical interpreter for a clinical setting. "
     "Translate the user's {src} into {tgt}. "
     "Use formal address appropriate for clinical contexts "
     "(e.g. 'usted'/'le' in Spanish, '您' in Mandarin). "
+    "Output ONLY in the native script of {tgt}. "
+    "Never mix in characters from other writing systems (no Hebrew, Latin, Arabic, Han, etc. unless that IS the target script). "
+    "If you do not know a word in {tgt}, use the closest {tgt}-language equivalent or paraphrase. Do not borrow words from other languages. "
     "Output ONLY the translated sentence — no commentary, quotes, or labels."
 )
 
 
+# used by /soap to turn a doctor-patient visit transcript into a clinical note
+# the "Not documented" instruction prevents Gemma from fabricating findings
+# when a section has no source material, which is a common LLM failure mode
+# for clinical use cases
 SOAP_SYSTEM = (
     "You are a clinical scribe. Read the doctor-patient visit transcript below "
     "and generate a SOAP note in {chart_lang_name}. "
@@ -21,6 +32,9 @@ SOAP_SYSTEM = (
 )
 
 
+# used by /extract to pull structured fields from the visit transcript for the live chart panel
+# Ollama's format="json" mode constrains the output to valid JSON
+# "Do not infer or fabricate" keeps the chart grounded in what was actually said
 EXTRACT_SYSTEM = (
     "You are a clinical scribe extracting structured information from a doctor-patient visit transcript. "
     "Read the transcript and return a JSON object with these fields, all in English:\n"

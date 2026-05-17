@@ -545,11 +545,12 @@
 <body>
 
   <header>
-    <img src="/static/medtranslate_logo_dark_mode.png" alt="" class="logo">
+    <img src="/static/medtranslate_logo.png" alt="" class="logo">
     <select class="pair-select" id="pair-select" aria-label="Language pair">
-      <option value="en-es">English ↔ Español</option>
-      <option value="en-zh">English ↔ 中文</option>
-      <option value="es-zh">Español ↔ 中文</option>
+      <option value="en-es">English &lt;&gt; Español</option>
+      <option value="en-zh">English &lt;&gt; 中文</option>
+      <option value="en-ar">English &lt;&gt; العربية</option>
+      <option value="en-hy">English &lt;&gt; Հայերեն</option>
     </select>
   </header>
 
@@ -692,6 +693,24 @@
         translating: '翻译中...',
         translatedSuffix: '（翻译）',
         roleSpeaker: '医生', roleListener: '病人'
+      },
+      ar: {
+        native: 'العربية',
+        button: 'العربية',
+        ttsLocale: 'ar-SA',
+        edit: 'تعديل', submit: 'إرسال',
+        translating: 'جارٍ الترجمة...',
+        translatedSuffix: '(مُترجم)',
+        roleSpeaker: 'طبيب', roleListener: 'مريض'
+      },
+      hy: {
+        native: 'Հայերեն',
+        button: 'Հայերեն',
+        ttsLocale: 'hy-AM',
+        edit: 'Խմբագրել', submit: 'Ուղարկել',
+        translating: 'Թարգմանվում է...',
+        translatedSuffix: '(թարգմանված)',
+        roleSpeaker: 'Բժիշկ', roleListener: 'Հիվանդ'
       },
     };
 
@@ -1050,16 +1069,61 @@
       lastMsgB = msgB;
     }
 
-    function speak(text, lang) {
+    // tracks the last fallback audio so a new speak() can cancel a still-playing clip
+    let fallbackAudio = null;
+
+    // languages where we skip audio playback entirely
+    // the eSpeak NG voice is too robotic and AI transcription tools mistranscribe it
+    // text translation still works, the patient reads the screen instead of hearing it
+    const NO_AUDIO_FALLBACK = new Set(['hy']);
+
+    async function speak(text, lang) {
       speechSynthesis.cancel();
+      if (fallbackAudio) { fallbackAudio.pause(); fallbackAudio = null; }
+
       const meta = LANGS[lang];
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = meta ? meta.ttsLocale : 'en-US';
-      utterance.rate = 0.9;
       const voices = speechSynthesis.getVoices();
-      const voice = voices.find(v => v.lang.startsWith(lang)) || voices.find(v => v.lang.startsWith(utterance.lang));
-      if (voice) utterance.voice = voice;
-      speechSynthesis.speak(utterance);
+      const voice = voices.find(v => v.lang.startsWith(lang));
+
+      if (voice) {
+        // OS-installed neural voice available, use the browser's offline SpeechSynthesis
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = voice.lang;
+        utterance.voice = voice;
+        utterance.rate = 0.9;
+        speechSynthesis.speak(utterance);
+        return;
+      }
+
+      if (NO_AUDIO_FALLBACK.has(lang)) {
+        // text-only language, no audio playback at all
+        return;
+      }
+
+      // no browser voice for this language, fall back to the server's eSpeak NG endpoint
+      // returns a WAV the browser can play like any audio file
+      try {
+        const res = await fetch('/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, lang })
+        });
+        if (!res.ok) {
+          console.error('TTS fallback HTTP error', res.status);
+          return;
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        fallbackAudio = new Audio(url);
+        // some browsers reject play() if it was not triggered by a recent user gesture
+        // catching the rejection here surfaces it in the console instead of silently dropping
+        const playResult = fallbackAudio.play();
+        if (playResult !== undefined) {
+          playResult.catch(err => console.error('TTS fallback play() rejected:', err));
+        }
+      } catch (e) {
+        console.error('TTS fallback failed:', e);
+      }
     }
 
     function makeMicSvg() {

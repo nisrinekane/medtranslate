@@ -1,8 +1,11 @@
 services:
-  backend:
-    build: .
+  ollama:
+    image: ollama/ollama:latest
+    container_name: medtranslate-ollama
     ports:
-      - "8080:8000"
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
     deploy:
       resources:
         reservations:
@@ -10,8 +13,32 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+    restart: unless-stopped
+
+  backend:
+    build: .
+    container_name: medtranslate-backend
+    depends_on:
+      - ollama
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_MODEL=gemma4:e2b
+      - WHISPER_MODEL=large-v3
+      - WHISPER_DEVICE=cuda
+      - WHISPER_COMPUTE_TYPE=float16
+    ports:
+      - "8080:8000"
     volumes:
-      - model-cache:/root/.cache/huggingface
+      - hf-cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
 
 volumes:
-  model-cache:
+  ollama-models:
+  hf-cache:
